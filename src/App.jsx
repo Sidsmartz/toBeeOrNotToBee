@@ -12,6 +12,7 @@ function Controls({ rotationSpeed, isMarketClicked }) {
     <DreiOrbitControls
       args={[camera, gl.domElement]}
       enablePan={false}
+      enableZoom={false}
       target={target}
       maxPolarAngle={1.45}
       enableDamping
@@ -42,7 +43,7 @@ function App() {
   const [radius, setRadius] = useState(15);
   const [cameraHeight, setCameraHeight] = useState(5);
   const [rotationSpeed, setRotationSpeed] = useState(0.5);
-  const [backgroundColor] = useState('#ffff00');
+  const [backgroundColor] = useState('#ffd21b');
 
   const [{ cameraPos, lookAtPos }, setCamera] = useSpring(() => ({
     cameraPos: [radius, cameraHeight, radius],
@@ -53,7 +54,7 @@ function App() {
   }));
 
   const { scale } = useSpring({
-    scale: isMarketHovered ? 2.3 : 2,
+    scale: isMarketHovered ? 2.5 : 2,
     config: { tension: 300, friction: 10 },
   });
 
@@ -63,7 +64,7 @@ function App() {
       setCamera({ cameraPos: [radius, cameraHeight, radius], lookAtPos: [0, 0.35, 0] });
     } else {
       setIsMarketClicked(true);
-      setCamera({ cameraPos: [0, 5, -30], lookAtPos: [0, 0.5, -40] });
+      setCamera({ cameraPos: [3, 2, -30], lookAtPos: [0, 0.5, -40] });
     }
   };
 
@@ -80,10 +81,10 @@ function App() {
           <color args={[backgroundColor]} attach="background" />
 
           <ambientLight intensity={10} position={[0, 20, 0]}  />
-          <spotLight intensity={5000} color="blue" position={[2, 20, 0]} castShadow />
-          <spotLight intensity={5000} color="blue" position={[-4, 20, 0]} castShadow />
-          <spotLight intensity={5000} color="blue" position={[-5, 10, 0]} castShadow />
-          <spotLight intensity={5000} color="blue" position={[4, 10, 0]} castShadow />
+          <spotLight intensity={2000} color="blue" position={[2, 15, 0]} castShadow />
+          <spotLight intensity={2000} color="blue" position={[-2, 15, 0]} castShadow />
+          <spotLight intensity={2000} color="blue" position={[-5, 5, 0]} castShadow />
+          <spotLight intensity={2000} color="blue" position={[4, 5, 0]} castShadow />
 
           <mesh position={[0, 14, 0]}>
             <boxGeometry args={[1, 1, 1]} />
@@ -91,23 +92,8 @@ function App() {
 
           <mesh position={[0,-3,0]} castShadow receiveShadow rotation-x={-Math.PI * 0.5}>
             <planeGeometry args={[1000, 1000]} />
-            <MeshReflectorMaterial
-              dithering={false}
-              color={[0, 0.015, 0.015]}
-              roughness={0.1}
-              blur={[5000, 1000]}
-              mixBlur={100}
-              mixStrength={80}
-              mixContrast={0.8}
-              resolution={512}
-              mirror={0}
-              depthScale={0.01}
-              minDepthThreshold={0.9}
-              maxDepthThreshold={1}
-              depthToBlurRatioBias={0.25}
-              debug={0}
-              reflectorOffset={0.2}
-            />
+            <MeshReflectorMaterial color={0x228865} metalness={0.1} roughness={0.1} />         
+
           </mesh>
 
            <mesh position={[0,-3,0]} scale={.75,.75,.75}>

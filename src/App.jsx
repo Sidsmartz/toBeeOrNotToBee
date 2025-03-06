@@ -64,7 +64,7 @@ function App() {
       setCamera({ cameraPos: [radius, cameraHeight, radius], lookAtPos: [0, 0.35, 0] });
     } else {
       setIsMarketClicked(true);
-      setCamera({ cameraPos: [3, 2, -30], lookAtPos: [0, 0.5, -40] });
+      setCamera({ cameraPos: [-0, 2, -25], lookAtPos: [0, 0.5, -40] });
     }
   };
 
@@ -80,7 +80,7 @@ function App() {
 
           <color args={[backgroundColor]} attach="background" />
 
-          <ambientLight intensity={10} position={[0, 20, 0]}  />
+          <ambientLight intensity={10} position={[0, 20, 0]} />
           <spotLight intensity={2000} color="blue" position={[2, 15, 0]} castShadow />
           <spotLight intensity={2000} color="blue" position={[-2, 15, 0]} castShadow />
           <spotLight intensity={2000} color="blue" position={[-5, 5, 0]} castShadow />
@@ -90,14 +90,13 @@ function App() {
             <boxGeometry args={[1, 1, 1]} />
           </mesh>
 
-          <mesh position={[0,-3,0]} castShadow receiveShadow rotation-x={-Math.PI * 0.5}>
-            <planeGeometry args={[1000, 1000]} />
-            <MeshReflectorMaterial color={0x228865} metalness={0.1} roughness={0.1} />         
-
+          <mesh position={[0, -3, 0]} rotation-x={-Math.PI * 0.5} receiveShadow>
+            <planeGeometry args={[100, 100]} />
+            <meshStandardMaterial color="#ffa500" wireframe />
           </mesh>
 
-           <mesh position={[0,-3,0]} scale={.75,.75,.75}>
-            <TextMesh/>
+          <mesh position={[0, -3, 0]} scale={0.75}>
+            <TextMesh />
           </mesh>
 
           <animated.mesh
@@ -111,6 +110,12 @@ function App() {
             <Market />
           </animated.mesh>
 
+          {[...Array(10)].map((_, i) => (
+            <mesh key={i} position={[0, -3, -40 + i * 4]} scale={0.75}>
+              <boxGeometry args={[1, 1, 1]} />
+              <meshStandardMaterial color="#000000" />
+            </mesh>
+          ))}
         </Canvas>
       </Suspense>
 

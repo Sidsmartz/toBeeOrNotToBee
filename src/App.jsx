@@ -10,7 +10,7 @@ import { B2BMela } from "./B2BMela";
 import { TextMesh } from "./TextMesh";
 import { Hero } from "./Hero";
 import { useSpring, animated } from "@react-spring/three";
-import { Revival } from "./revival";
+import { Revival } from "./Revival";
 import { Ground } from "./Ground";
 
 function Controls({ rotationSpeed, isMarketClicked, isRevivalClicked }) {

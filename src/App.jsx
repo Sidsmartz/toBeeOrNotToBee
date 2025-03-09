@@ -127,7 +127,7 @@ function App() {
     <>
       <Suspense fallback={null}>
         <Canvas shadows>
-          <Environment files="public/hdri/B2B.hdr" background />
+          <Environment files="/hdri/B2B.hdr" background />
           <PerspectiveCamera
             ref={cameraRef}
             makeDefault

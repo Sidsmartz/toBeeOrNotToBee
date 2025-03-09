@@ -18,12 +18,17 @@ import { BrandRevivalTitle } from "./BrandRevivalTitle";
 import { ClickHereToRegister } from "./ClickHereToRegister";
 import { RevivalDescription } from "./RevivalDescription";
 
-function Controls({ rotationSpeed, isMarketClicked, isRevivalClicked, isMobile }) {
+function Controls({
+  rotationSpeed,
+  isMarketClicked,
+  isRevivalClicked,
+  isMobile,
+}) {
   const { camera, gl } = useThree();
   const target = isMarketClicked
     ? [15, 0, -20]
     : isRevivalClicked
-    ? [-20, 0, 10]
+    ? [-15, 0, 0]
     : [0, 0.35, 0];
   return (
     <DreiOrbitControls
@@ -54,18 +59,20 @@ function CameraAnimator({ cameraRef, cameraPos, lookAtPos, animating }) {
 
 function LoadingScreen() {
   return (
-    <div style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: '#ffd21b',
-      zIndex: 10
-    }}>
+    <div
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#ffd21b",
+        zIndex: 10,
+      }}
+    >
       <h1>Loading...</h1>
     </div>
   );
@@ -149,7 +156,7 @@ function App() {
       setIsRevivalClicked(true);
       setCamera({
         cameraPos: [-10, 0, 10], // Edit this to change the camera position when revival is clicked
-        lookAtPos: [-15, 0, 10], // Edit this to change the lookAt position when revival is clicked
+        lookAtPos: [-15, 0, 0], // Edit this to change the lookAt position when revival is clicked
       });
     }
   };
@@ -166,6 +173,13 @@ function App() {
   const handleLinkClick = () => {
     window.open("http://linktr.ee/mlritcie", "_blank");
   };
+  const { oscillation } = useSpring({
+    from: { oscillation: -Math.PI / 8 },
+    to: { oscillation: Math.PI / 8 },
+    loop: { reverse: true }, // Causes the motion to go back and forth
+    config: { duration: 10000 }, // Adjust speed
+    pause: isMarketClicked || isRevivalClicked,
+  });
 
   return (
     <>
@@ -173,12 +187,14 @@ function App() {
       <Suspense fallback={null}>
         <Canvas shadows onCreated={() => setIsLoaded(true)}>
           <Environment files="/hdri/B2B.hdr" background />
-          <PerspectiveCamera
-            ref={cameraRef}
-            makeDefault
-            fov={isMobile ? 150 : 100} // Adjust fov for mobile devices
-            position={[5, 0, 20]} // Edit this to change the default camera position
-          />
+          <animated.group rotation-y={oscillation}>
+            <PerspectiveCamera
+              ref={cameraRef}
+              makeDefault
+              fov={isMobile ? 150 : 100} // Adjust fov for mobile devices
+              position={[5, 0, 20]} // Edit this to change the default camera position
+            />
+          </animated.group>
 
           <Controls
             rotationSpeed={rotationSpeed}
@@ -199,10 +215,29 @@ function App() {
           <mesh position={[0, -7, 0]} scale={[15, 1, 15]}>
             <Ground />
           </mesh>
-
+          <mesh
+            position={[1.2, 12, 0]}
+            rotation={[0, 0.28, 0]}
+            onClick={handleLinkClick}
+          >
+            <ClickHereToRegister />
+            <meshBasicMaterial color="yellow" />
+          </mesh>
           <mesh position={[0, -5, 5]} scale={0.75}>
             <Hero />
           </mesh>
+          <animated.mesh
+            ref={marketRef}
+            position={[33, 2, -20]}
+            scale={2}
+            rotation={[0, -20, 0]}
+            onPointerOver={() => setIsMarketHovered(true)}
+            onPointerOut={() => setIsMarketHovered(false)}
+            onClick={handleMarketClick}
+          >
+            <B2BMelaTitle />
+            <meshBasicMaterial color="black" />
+          </animated.mesh>
 
           <animated.mesh
             ref={marketRef}
@@ -216,30 +251,34 @@ function App() {
             <B2BMela />
           </animated.mesh>
 
-          <mesh position={[33, 2, -20]} scale={2} rotation={[0, -20, 0]}>
-            <B2BMelaTitle />
-            <meshBasicMaterial color="black" />
-          </mesh>
+          {isMarketClicked && (
+            <>
+              <mesh position={[2, 7, -36]} scale={4} rotation={[0, 210.2, 0]}>
+                <B2BMelaDescription />
+                <meshBasicMaterial color="black" />
+              </mesh>
+            </>
+          )}
 
-          <mesh position={[6, -3, -25]} scale={1} rotation={[0, .1, 0]}>
-            <B2BMelaDescription />
-            <meshBasicMaterial color="black" />
-          </mesh>
-
-          <mesh position={[-20, 2.5, 1.5]} scale={1} rotation={[0, 1.33, 0]}>
+          {isRevivalClicked && (
+            <>
+              <mesh position={[-8, -4, 0]} scale={0.8} rotation={[0, 0, 0]}>
+                <RevivalDescription />
+              </mesh>
+            </>
+          )}
+          <animated.mesh
+            ref={revivalRef}
+            position={[-20, 2.5, 1.5]}
+            scale={1}
+            rotation={[0, 1.33, 0]}
+            onPointerOver={() => setIsRevivalHovered(true)}
+            onPointerOut={() => setIsRevivalHovered(false)}
+            onClick={handleRevivalClick}
+          >
             <BrandRevivalTitle />
             <meshBasicMaterial color="black" />
-          </mesh>
-
-          <mesh position={[1.2, 12, 0]} rotation={[0, .28, 0]} onClick={handleLinkClick}>
-            <ClickHereToRegister />
-            <meshBasicMaterial color="yellow" />
-          </mesh>
-
-          <mesh position={[-20, -4, 18]} scale={.8} rotation={[0, 2, 0]}>
-            <RevivalDescription/>
-          </mesh>
-
+          </animated.mesh>
           <animated.mesh
             ref={revivalRef}
             position={[-20, -3, 10]}
@@ -251,9 +290,6 @@ function App() {
           >
             <Revival />
           </animated.mesh>
-
-          <mesh position={[0, 13, 0]} rotation={[0,.28,0]} onClick={handleLinkClick}>
-          </mesh>
         </Canvas>
       </Suspense>
       {(isMarketClicked || isRevivalClicked) && (

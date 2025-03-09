@@ -1,4 +1,4 @@
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useRef, useState, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   OrbitControls as DreiOrbitControls,
@@ -12,8 +12,13 @@ import { Hero } from "./Hero";
 import { useSpring, animated } from "@react-spring/three";
 import { Revival } from "./Revival";
 import { Ground } from "./Ground";
+import { B2BMelaTitle } from "./B2BMelaTitle";
+import { B2BMelaDescription } from "./B2BMelaDescription";
+import { BrandRevivalTitle } from "./BrandRevivalTitle";
+import { ClickHereToRegister } from "./ClickHereToRegister";
+import { RevivalDescription } from "./RevivalDescription";
 
-function Controls({ rotationSpeed, isMarketClicked, isRevivalClicked }) {
+function Controls({ rotationSpeed, isMarketClicked, isRevivalClicked, isMobile }) {
   const { camera, gl } = useThree();
   const target = isMarketClicked
     ? [15, 0, -20]
@@ -24,7 +29,7 @@ function Controls({ rotationSpeed, isMarketClicked, isRevivalClicked }) {
     <DreiOrbitControls
       args={[camera, gl.domElement]}
       enablePan={false}
-      enableZoom={false}
+      enableZoom={isMobile}
       enableRotate={true}
       target={target}
       maxPolarAngle={1.45}
@@ -32,7 +37,7 @@ function Controls({ rotationSpeed, isMarketClicked, isRevivalClicked }) {
       maxAzimuthAngle={Math.PI / 6} // 30 degrees
       enableDamping
       autoRotate={!isMarketClicked && !isRevivalClicked}
-      autoRotateSpeed={rotationSpeed}
+      autoRotateSpeed={rotationSpeed || 0.2} // Slow auto-rotate speed when idle
     />
   );
 }
@@ -45,6 +50,25 @@ function CameraAnimator({ cameraRef, cameraPos, lookAtPos, animating }) {
     }
   });
   return null;
+}
+
+function LoadingScreen() {
+  return (
+    <div style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#ffd21b',
+      zIndex: 10
+    }}>
+      <h1>Loading...</h1>
+    </div>
+  );
 }
 
 function App() {
@@ -60,6 +84,22 @@ function App() {
 
   const [rotationSpeed] = useState(0);
   const [backgroundColor] = useState("#ffd21b");
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoaded(true), 1000); // Simulate loading time
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const [{ cameraPos, lookAtPos }, setCamera] = useSpring(() => ({
     // Default camera position and lookAt
@@ -108,8 +148,8 @@ function App() {
     } else {
       setIsRevivalClicked(true);
       setCamera({
-        cameraPos: [-8, 3, 10], // Edit this to change the camera position when revival is clicked
-        lookAtPos: [-20, 0, 10], // Edit this to change the lookAt position when revival is clicked
+        cameraPos: [-10, 0, 10], // Edit this to change the camera position when revival is clicked
+        lookAtPos: [-15, 0, 10], // Edit this to change the lookAt position when revival is clicked
       });
     }
   };
@@ -123,15 +163,20 @@ function App() {
     });
   };
 
+  const handleLinkClick = () => {
+    window.open("http://linktr.ee/mlritcie", "_blank");
+  };
+
   return (
     <>
+      {!isLoaded && <LoadingScreen />}
       <Suspense fallback={null}>
-        <Canvas shadows>
+        <Canvas shadows onCreated={() => setIsLoaded(true)}>
           <Environment files="/hdri/B2B.hdr" background />
           <PerspectiveCamera
             ref={cameraRef}
             makeDefault
-            fov={80}
+            fov={isMobile ? 150 : 100} // Adjust fov for mobile devices
             position={[5, 0, 20]} // Edit this to change the default camera position
           />
 
@@ -139,6 +184,7 @@ function App() {
             rotationSpeed={rotationSpeed}
             isMarketClicked={isMarketClicked}
             isRevivalClicked={isRevivalClicked}
+            isMobile={isMobile}
           />
 
           <CameraAnimator
@@ -170,6 +216,30 @@ function App() {
             <B2BMela />
           </animated.mesh>
 
+          <mesh position={[33, 2, -20]} scale={2} rotation={[0, -20, 0]}>
+            <B2BMelaTitle />
+            <meshBasicMaterial color="black" />
+          </mesh>
+
+          <mesh position={[6, -3, -25]} scale={1} rotation={[0, .1, 0]}>
+            <B2BMelaDescription />
+            <meshBasicMaterial color="black" />
+          </mesh>
+
+          <mesh position={[-20, 2.5, 1.5]} scale={1} rotation={[0, 1.33, 0]}>
+            <BrandRevivalTitle />
+            <meshBasicMaterial color="black" />
+          </mesh>
+
+          <mesh position={[1.2, 12, 0]} rotation={[0, .28, 0]} onClick={handleLinkClick}>
+            <ClickHereToRegister />
+            <meshBasicMaterial color="yellow" />
+          </mesh>
+
+          <mesh position={[-20, -4, 18]} scale={.8} rotation={[0, 2, 0]}>
+            <RevivalDescription/>
+          </mesh>
+
           <animated.mesh
             ref={revivalRef}
             position={[-20, -3, 10]}
@@ -181,6 +251,9 @@ function App() {
           >
             <Revival />
           </animated.mesh>
+
+          <mesh position={[0, 13, 0]} rotation={[0,.28,0]} onClick={handleLinkClick}>
+          </mesh>
         </Canvas>
       </Suspense>
       {(isMarketClicked || isRevivalClicked) && (

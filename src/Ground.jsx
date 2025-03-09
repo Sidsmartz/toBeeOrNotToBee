@@ -28,7 +28,7 @@ export function Ground() {
         dithering={true}
         color={[0.015, 0.015, 0.015]}
         roughness={.4}
-        blur={[1000, 300]}
+        blur={[10000, 3000]}
         mixBlur={30}
         mixStrength={80}
         mixContrast={1}

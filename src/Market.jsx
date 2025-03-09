@@ -10,7 +10,7 @@ export function Market() {
     );
     useEffect(()=>{
         gltf.scene.scale.set(1,1,1);
-        gltf.scene.position.set(-0.5,0,0);
+        gltf.scene.position.set(0,0,0);
         gltf.scene.traverse((object)=>{
             if(object instanceof Mesh){
                 object.castShadow = true;

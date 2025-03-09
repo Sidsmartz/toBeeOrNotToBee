@@ -6,23 +6,30 @@ import {
   MeshReflectorMaterial,
   Environment,
 } from "@react-three/drei";
-import { Market } from "./Market";
+import { B2BMela } from "./B2BMela";
 import { TextMesh } from "./TextMesh";
 import { Hero } from "./Hero";
 import { useSpring, animated } from "@react-spring/three";
+import { Revival } from "./revival";
+import { Ground } from "./Ground";
 
-function Controls({ rotationSpeed, isMarketClicked }) {
+function Controls({ rotationSpeed, isMarketClicked, isRevivalClicked }) {
   const { camera, gl } = useThree();
-  const target = isMarketClicked ? [0, 0.5, -40] : [0, 0.35, 0];
+  const target = isMarketClicked
+    ? [15, 0, -20]
+    : isRevivalClicked
+    ? [-20, 0, 10]
+    : [0, 0.35, 0];
   return (
     <DreiOrbitControls
       args={[camera, gl.domElement]}
       enablePan={false}
       enableZoom={false}
+      enableRotate={false}
       target={target}
       maxPolarAngle={1.45}
       enableDamping
-      autoRotate={!isMarketClicked}
+      autoRotate={!isMarketClicked && !isRevivalClicked}
       autoRotateSpeed={rotationSpeed}
     />
   );
@@ -41,40 +48,77 @@ function CameraAnimator({ cameraRef, cameraPos, lookAtPos, animating }) {
 function App() {
   const cameraRef = useRef();
   const marketRef = useRef();
+  const revivalRef = useRef();
 
   const [isMarketClicked, setIsMarketClicked] = useState(false);
+  const [isRevivalClicked, setIsRevivalClicked] = useState(false);
   const [animating, setAnimating] = useState(false);
   const [isMarketHovered, setIsMarketHovered] = useState(false);
+  const [isRevivalHovered, setIsRevivalHovered] = useState(false);
 
-  const [radius, setRadius] = useState(15);
-  const [cameraHeight, setCameraHeight] = useState(5);
-  const [rotationSpeed, setRotationSpeed] = useState(0);
+  const [rotationSpeed] = useState(0);
   const [backgroundColor] = useState("#ffd21b");
 
   const [{ cameraPos, lookAtPos }, setCamera] = useSpring(() => ({
-    cameraPos: [radius, cameraHeight, radius],
-    lookAtPos: [0, 0.35, 0],
+    // Default camera position and lookAt
+    cameraPos: [5, 0, 20], // Edit this to change the default camera position
+    lookAtPos: [0, 0.35, 0], // Edit this to change the default lookAt position
     config: { mass: 1, tension: 170, friction: 26 },
     onStart: () => setAnimating(true),
     onRest: () => setAnimating(false),
   }));
 
-  const { scale } = useSpring({
-    scale: isMarketHovered ? 2.5 : 2,
+  const { scale: marketScale } = useSpring({
+    scale: isMarketHovered && !isMarketClicked ? 2.5 : 2,
+    config: { tension: 300, friction: 10 },
+  });
+
+  const { scale: revivalScale } = useSpring({
+    scale: isRevivalHovered && !isRevivalClicked ? 7 : 5,
     config: { tension: 300, friction: 10 },
   });
 
   const handleMarketClick = () => {
+    setIsRevivalClicked(false);
     if (isMarketClicked) {
       setIsMarketClicked(false);
       setCamera({
-        cameraPos: [radius, cameraHeight, radius],
-        lookAtPos: [0, 0.35, 0],
+        cameraPos: [5, 0, 20], // Edit this to change the default camera position
+        lookAtPos: [0, 0.35, 0], // Edit this to change the default lookAt position
       });
     } else {
       setIsMarketClicked(true);
-      setCamera({ cameraPos: [15, 2, -10], lookAtPos: [15, -3, -30] });
+      setCamera({
+        cameraPos: [15, 3, -12], // Edit this to change the camera position when market is clicked
+        lookAtPos: [15, 0, -20], // Edit this to change the lookAt position when market is clicked
+      });
     }
+  };
+
+  const handleRevivalClick = () => {
+    setIsMarketClicked(false);
+    if (isRevivalClicked) {
+      setIsRevivalClicked(false);
+      setCamera({
+        cameraPos: [5, 0, 20], // Edit this to change the default camera position
+        lookAtPos: [0, 0.35, 0], // Edit this to change the default lookAt position
+      });
+    } else {
+      setIsRevivalClicked(true);
+      setCamera({
+        cameraPos: [-20, 3, 10], // Edit this to change the camera position when revival is clicked
+        lookAtPos: [-20, 0, 10], // Edit this to change the lookAt position when revival is clicked
+      });
+    }
+  };
+
+  const handleBackClick = () => {
+    setIsMarketClicked(false);
+    setIsRevivalClicked(false);
+    setCamera({
+      cameraPos: [5, 0, 20], // Edit this to change the default camera position
+      lookAtPos: [0, 0.35, 0], // Edit this to change the default lookAt position
+    });
   };
 
   return (
@@ -85,13 +129,14 @@ function App() {
           <PerspectiveCamera
             ref={cameraRef}
             makeDefault
-            fov={80}
-            position={[radius, cameraHeight, radius]}
+            fov={75}
+            position={[5, 2.5, 20]} // Edit this to change the default camera position
           />
 
           <Controls
             rotationSpeed={rotationSpeed}
             isMarketClicked={isMarketClicked}
+            isRevivalClicked={isRevivalClicked}
           />
 
           <CameraAnimator
@@ -103,9 +148,8 @@ function App() {
 
           <color args={[backgroundColor]} attach="background" />
 
-          <mesh position={[0, -3, 0]} rotation-x={-Math.PI * 0.5} receiveShadow>
-            <planeGeometry args={[100, 100]} />
-            <meshStandardMaterial color="#ffa500" wireframe />
+          <mesh position={[0, -7, 0]} scale={[15, 1, 15]}>
+            <Ground />
           </mesh>
 
           <mesh position={[0, -5, 5]} scale={0.75}>
@@ -114,52 +158,37 @@ function App() {
 
           <animated.mesh
             ref={marketRef}
-            position={[15, -3, -20]}
-            scale={scale}
+            position={[25, -6, -20]}
+            rotation={[0, -20, 0]}
+            scale={marketScale}
             onPointerOver={() => setIsMarketHovered(true)}
             onPointerOut={() => setIsMarketHovered(false)}
             onClick={handleMarketClick}
           >
-            <Market />
+            <B2BMela />
+          </animated.mesh>
+
+          <animated.mesh
+            ref={revivalRef}
+            position={[-20, -3, 10]}
+            scale={revivalScale}
+            rotation={[0, 20, 0]}
+            onPointerOver={() => setIsRevivalHovered(true)}
+            onPointerOut={() => setIsRevivalHovered(false)}
+            onClick={handleRevivalClick}
+          >
+            <Revival />
           </animated.mesh>
         </Canvas>
       </Suspense>
-
-      <div style={{ position: "absolute", top: 20, left: 20, color: "black" }}>
-        <label>
-          Radius:
-          <input
-            type="range"
-            min="5"
-            max="50"
-            value={radius}
-            onChange={(e) => setRadius(Number(e.target.value))}
-          />
-        </label>
-        <br />
-        <label>
-          Camera Height:
-          <input
-            type="range"
-            min="1"
-            max="20"
-            value={cameraHeight}
-            onChange={(e) => setCameraHeight(Number(e.target.value))}
-          />
-        </label>
-        <br />
-        <label>
-          Rotation Speed:
-          <input
-            type="range"
-            min="0"
-            max="2"
-            step="0.1"
-            value={rotationSpeed}
-            onChange={(e) => setRotationSpeed(Number(e.target.value))}
-          />
-        </label>
-      </div>
+      {(isMarketClicked || isRevivalClicked) && (
+        <button
+          onClick={handleBackClick}
+          style={{ position: "absolute", top: 20, left: 20 }}
+        >
+          Back
+        </button>
+      )}
     </>
   );
 }

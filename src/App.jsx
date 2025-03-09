@@ -25,9 +25,11 @@ function Controls({ rotationSpeed, isMarketClicked, isRevivalClicked }) {
       args={[camera, gl.domElement]}
       enablePan={false}
       enableZoom={false}
-      enableRotate={false}
+      enableRotate={true}
       target={target}
       maxPolarAngle={1.45}
+      minAzimuthAngle={-Math.PI / 6} // -30 degrees
+      maxAzimuthAngle={Math.PI / 6} // 30 degrees
       enableDamping
       autoRotate={!isMarketClicked && !isRevivalClicked}
       autoRotateSpeed={rotationSpeed}
@@ -83,13 +85,13 @@ function App() {
     if (isMarketClicked) {
       setIsMarketClicked(false);
       setCamera({
-        cameraPos: [5, 0, 20], // Edit this to change the default camera position
-        lookAtPos: [0, 0.35, 0], // Edit this to change the default lookAt position
+        cameraPos: [5, 3, 20], // Edit this to change the default camera position
+        lookAtPos: [0, 0, 0], // Edit this to change the default lookAt position
       });
     } else {
       setIsMarketClicked(true);
       setCamera({
-        cameraPos: [15, 3, -12], // Edit this to change the camera position when market is clicked
+        cameraPos: [8, 3, -8], // Edit this to change the camera position when market is clicked
         lookAtPos: [15, 0, -20], // Edit this to change the lookAt position when market is clicked
       });
     }
@@ -100,13 +102,13 @@ function App() {
     if (isRevivalClicked) {
       setIsRevivalClicked(false);
       setCamera({
-        cameraPos: [5, 0, 20], // Edit this to change the default camera position
-        lookAtPos: [0, 0.35, 0], // Edit this to change the default lookAt position
+        cameraPos: [5, 3, 20], // Edit this to change the default camera position
+        lookAtPos: [0, 0, 0], // Edit this to change the default lookAt position
       });
     } else {
       setIsRevivalClicked(true);
       setCamera({
-        cameraPos: [-20, 3, 10], // Edit this to change the camera position when revival is clicked
+        cameraPos: [-8, 3, 10], // Edit this to change the camera position when revival is clicked
         lookAtPos: [-20, 0, 10], // Edit this to change the lookAt position when revival is clicked
       });
     }
@@ -116,8 +118,8 @@ function App() {
     setIsMarketClicked(false);
     setIsRevivalClicked(false);
     setCamera({
-      cameraPos: [5, 0, 20], // Edit this to change the default camera position
-      lookAtPos: [0, 0.35, 0], // Edit this to change the default lookAt position
+      cameraPos: [5, 3, 20], // Edit this to change the default camera position
+      lookAtPos: [0, 0, 0], // Edit this to change the default lookAt position
     });
   };
 
@@ -125,12 +127,12 @@ function App() {
     <>
       <Suspense fallback={null}>
         <Canvas shadows>
-          <Environment preset="sunset" />
+          <Environment files="public/hdri/B2B.hdr" background />
           <PerspectiveCamera
             ref={cameraRef}
             makeDefault
-            fov={75}
-            position={[5, 2.5, 20]} // Edit this to change the default camera position
+            fov={80}
+            position={[5, 0, 20]} // Edit this to change the default camera position
           />
 
           <Controls
